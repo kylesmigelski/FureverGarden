@@ -1,0 +1,59 @@
+// src/app/components/clouds/clouds.component.scss
+:host {
+  // Display block allows the component itself to be positioned if needed,
+  // although the inner .clouds-container handles absolute positioning.
+  display: block;
+  position: relative; // Or absolute depending on how you place <app-clouds>
+  width: 100%;
+  height: 100%; // Component takes up space given by parent
+  overflow: hidden; // Clip clouds within the component bounds
+  pointer-events: none; // Component itself shouldn't block interactions
+}
+
+// --- Cloud Variables (Moved from CanvasComponent) ---
+$cloud-color-inner: rgba(255, 255, 255, 0.9);
+$cloud-color-mid: rgba(255, 255, 255, 0.5);
+$cloud-color-outer: rgba(255, 255, 255, 0);
+$cloud-blur: 6px;
+
+// --- Z-Index DEFINITION (Moved from CanvasComponent) ---
+// This is only used internally now for calculation in TS, but good to keep track
+// $cloudBaseZIndex: 1; // Defined in TS
+
+// --- Cloud Styles (Moved from CanvasComponent) ---
+.clouds-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cloud {
+  position: absolute;
+  left: -30%; // Start off-screen
+  background: transparent;
+  animation-name: moveCloud;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  pointer-events: none;
+  // Base z-index and dynamic part set via inline style [style.zIndex]
+}
+
+.cloud-puff {
+  content: '';
+  position: absolute;
+  background: radial-gradient(ellipse at center,
+    $cloud-color-inner 0%,
+    $cloud-color-inner 15%,
+    $cloud-color-mid 40%,
+    $cloud-color-outer 75%);
+  border-radius: 50%;
+  filter: blur($cloud-blur);
+}
+
+// --- Animation (Moved from CanvasComponent) ---
+@keyframes moveCloud {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(100vw + 150%)); } // Ensure it moves across the *viewport* width
+}

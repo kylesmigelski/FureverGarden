@@ -1,0 +1,15 @@
+<!-- Layered Hills SVG Overlays -->
+<ng-container *ngFor="let layer of hillLayers; trackBy: trackByLayerId">
+  <div class="hills-svg-container"
+       [style.top.px]="layer.offsetTop"
+       [style.z-index]="layer.zIndex"
+       [style.height.px]="layer.height"> <!-- Set container height -->
+    <!-- Dynamically set viewBox height -->
+    <svg preserveAspectRatio="none"
+         [attr.viewBox]="'0 0 1000 ' + layer.height"
+         xmlns="http://www.w3.org/2000/svg">
+      <path [attr.d]="layer.pathData"
+            [attr.fill]="layer.color" />
+    </svg>
+  </div>
+</ng-container>

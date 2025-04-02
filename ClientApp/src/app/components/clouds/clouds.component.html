@@ -1,0 +1,23 @@
+<!-- src/app/components/clouds/clouds.component.html -->
+<div class="clouds-container">
+  <ng-container *ngFor="let cloud of cloudLayers; trackBy: trackByCloudId">
+    <!-- Main cloud container sets position, base size, opacity, animation -->
+    <div class="cloud"
+         [style.top.px]="cloud.top"
+         [style.width.px]="cloud.baseSize"
+         [style.height.px]="cloud.height"
+         [style.opacity]="cloud.opacity"
+         [style.zIndex]="cloud.zIndex"
+         [style.animationDuration]="cloud.duration + 's'"
+         [style.animationDelay]="'-' + cloud.delay + 's'">
+      <!-- Generate individual puffs inside -->
+      <div class="cloud-puff"
+           *ngFor="let puff of cloud.puffs"
+           [style.width.%]="puff.sizeRatio * 100"
+           [style.height.%]="puff.sizeRatio * 100"
+           [style.top.%]="puff.topPerc"
+           [style.left.%]="puff.leftPerc">
+      </div>
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,30 @@
+<div
+  *ngIf="isVisible && selectedTribute"
+  class="floating-modal details-modal"
+  [style.left.px]="modalX"
+  [style.top.px]="modalY"
+  (click)="stopPropagation($event)"
+>
+  <h4>Tribute Details</h4>
+  <div class="details-content">
+    <div><strong>Icon:</strong> {{ selectedTribute.icon }}</div>
+    <div><strong>Name:</strong> {{ selectedTribute.name }}</div>
+    <div><strong>Description:</strong> {{ selectedTribute.description || 'N/A' }}</div>
+    <div><strong>Zone:</strong> {{ selectedTribute.zone }}</div>
+    <div><strong>Coords:</strong> ({{ selectedTribute.x | number:'1.0-0' }}
+      , {{ selectedTribute.y | number:'1.0-0' }})
+    </div>
+    <div><strong>ID:</strong> {{ selectedTribute.id }}</div>
+    <div *ngIf="photoUrl" class="tribute-photo-section">
+      <strong>Photo:</strong><br>
+      <img
+        [src]="photoUrl"
+        [alt]="'Photo for tribute ' + selectedTribute.name"
+        (error)="onImageError($event)"
+      >
+    </div>
+  </div>
+  <div class="modal-actions">
+    <button (click)="onCloseClick()" class="btn-close">Close</button>
+  </div>
+</div>

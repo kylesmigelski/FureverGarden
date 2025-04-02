@@ -1,0 +1,16 @@
+.hills-svg-container {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  // Height is now set dynamically via [style.height.px]
+  // height: 500px; // Remove fixed height from SCSS
+  pointer-events: none;
+  overflow: hidden;
+  // z-index and top are set dynamically
+}
+
+.hills-svg-container svg {
+  display: block;
+  width: 100%;
+  height: 100%; // SVG fills its container
+}

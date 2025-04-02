@@ -1,0 +1,44 @@
+<div
+  *ngIf="isVisible && pendingTribute"
+  class="floating-modal new-tribute-modal"
+  [style.left.px]="pendingTribute.modalX"
+  [style.top.px]="pendingTribute.modalY"
+  (click)="stopPropagation($event)"
+>
+  <h4>Place New Tribute</h4>
+  <div class="form-group">
+    <label for="tributeName">Name:</label>
+    <input
+      #tributeNameInputRef
+      type="text"
+      id="tributeName"
+      [(ngModel)]="tributeNameInput"
+      (keydown.enter)="onConfirmClick()"
+      (keydown.escape)="onCancelClick()"
+      placeholder="Enter name..."
+    />
+    <label for="tributePhoto">Photo (Optional):</label>
+    <input
+      #tributePhotoInput
+      type="file"
+      id="tributePhoto"
+      accept="image/*"
+      (change)="onFileSelected($event)"
+    />
+    <div *ngIf="selectedFileName">Selected: {{ selectedFileName }}</div>
+    <div *ngIf="uploadError" style="color: red;">{{ uploadError }}</div>
+    <label for="tributeDesc">Description</label>
+    <textarea
+      #tributeDescInputRef
+      id="tributeDesc"
+      [(ngModel)]="tributeDescInput"
+      (keydown.enter)="onConfirmClick()"
+      (keydown.escape)="onCancelClick()"
+      placeholder="Enter description..."
+    ></textarea>
+  </div>
+  <div class="modal-actions">
+    <button (click)="onConfirmClick()" class="btn-place">Place {{ pendingTribute.icon }}</button>
+    <button (click)="onCancelClick()" class="btn-cancel">Cancel</button>
+  </div>
+</div>

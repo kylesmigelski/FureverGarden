@@ -1,0 +1,59 @@
+﻿// --- Z-Index Variables ---
+// Define these *before* they are used
+$cloud-layer-z: 800;
+$hill-base-z: 5; // Hills start above clouds
+// Note: $max-hill-z-index is calculated in TS now, ensure this base is lower
+$star-z: 150;    // Stars clearly above hills
+$point-z: 160;   // Points clearly above stars
+$modal-z: 1000;  // Modals way above everything
+
+// Style the app-clouds host element directly
+app-clouds.clouds-layer {
+  position: absolute;
+  top: var(--space-end-perc);
+  left: 0;
+  width: 100%;
+  z-index: $cloud-layer-z; // Use variable
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.canvas-container {
+  height: 100vh;
+  overflow-y: scroll;
+  position: relative; // Needed for absolute positioning of children if modal wasn't fixed
+}
+
+.tribute-canvas {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  cursor: crosshair;
+
+  $visual-height: 12000px;
+
+  // Define colors (these remain SCSS variables)
+  $space-col1: #000000;
+  $space-col2: #000020;
+  $sky-col1: #204080;
+  $sky-col2: #87CEEB;
+  $surface-col: #90EE90;
+  $roots-col: #8B4513;
+  $deep-col1: #4B0082;
+  $deep-col2: #101010;
+
+  $surface-bg-col: #90EE90;
+  $roots-bg-col: #8B4513; // SaddleBrown
+  $deep-bg-col: #4B0082; // Indigo for deep space? or another brown?
+  $deep-end-bg-col: #101010;
+
+  background: linear-gradient(to bottom,
+    // Space Zone
+    $space-col1 0%,
+    $space-col2 var(--space-end-perc, 33.3%), // Use CSS variable
+    $sky-col2 var(--sky-end-perc, 50%),     // Use CSS variable
+    $surface-col var(--sky-end-perc, 62.5%),
+    $roots-col var(--roots-end-perc, 75%),     // Use CSS variable
+    $deep-col2 100%
+  );
+}

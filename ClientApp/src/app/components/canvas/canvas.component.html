@@ -1,0 +1,54 @@
+﻿<div class="canvas-container">
+  <!-- Changed click handler to openNewTributeModal -->
+  <div
+    class="tribute-canvas"
+    [style.height.px]="VISUAL_HEIGHT"
+    (click)="openNewTributeModal($event)"
+    >
+
+    <!-- ===== CLOUDS COMPONENT  ===== -->
+    <app-clouds
+        class="clouds-layer"
+        [spaceLimit]="spaceLimit"
+        [skyLimit]="skyLimit">
+    </app-clouds>
+    <!-- ===== END CLOUDS COMPONENT ===== -->
+
+    <!-- Render Hills -->
+    <app-hills></app-hills>
+
+    <!-- Render Stars -->
+    <app-stars
+      [starCount]="starRenderCount"
+      [skyZoneLimit]="starZoneLimit"
+      [visualHeight]="VISUAL_HEIGHT"
+      [taperHeight]="starTaperHeight"
+      [taperExponent]="starTaperExponent"
+    >
+    </app-stars>
+
+    <!-- Tribute Layer Component -->
+    <app-tributelayer
+      [tributePoints]="tributes$ | async"
+      (tributeClicked)="handleTributeClick($event)">
+    </app-tributelayer>
+
+    <app-newtribute
+      [isVisible]="isNewTributeModalVisible"
+      [pendingTribute]="pendingTribute"
+      (confirm)="handleNewTributeConfirm($event)"
+      (cancel)="handleNewTributeCancel()">
+    </app-newtribute>
+
+    <app-viewtribute
+      [isVisible]="isDetailsModalVisible"
+      [selectedTribute]="selectedTributeForModal"
+      [modalX]="detailsModalX"
+      [modalY]="detailsModalY"
+      (close)="handleDetailsClose()">
+    </app-viewtribute>
+
+  </div>
+</div>
+
+

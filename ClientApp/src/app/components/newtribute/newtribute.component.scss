@@ -1,0 +1,27 @@
+// Styles moved/adapted from canvas.component.scss
+// Base styles for floating-modal can be kept global or duplicated/scoped here
+// Assuming base styles are available globally or via ::ng-deep if needed
+
+// Specific styles for this modal instance
+   :host { // Or directly on .new-tribute-modal if :host causes issues
+   .floating-modal { // Apply general modal styles if not global
+   position: fixed;
+     background-color: #fff;
+     border: 1px solid #ccc;
+     border-radius: 8px;
+     padding: 15px 20px;
+     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+     z-index: 1000; // Ensure high z-index (or use variable)
+   min-width: 220px;
+     color: #333;
+   }
+
+     h4 { /* ... */ }
+     .form-group { /* ... */ }
+     label { /* ... */ }
+     input[type="text"], textarea { /* ... */ }
+     .modal-actions { /* ... */ }
+     button { /* ... */ }
+     .btn-place { /* ... */ }
+     .btn-cancel { /* ... */ }
+   }

@@ -1,0 +1,57 @@
+/* src/app/stars/stars.component.scss */
+/* Styles scoped to this component */
+
+/* Make the host element take up no space itself */
+:host {
+  display: block; /* Or position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; */
+  position: absolute;
+  width: 100%;
+  height: 100%; // Make it cover its container (.tribute-canvas)
+  top: 0;
+  left: 0;
+  pointer-events: none; // Stars shouldn't intercept clicks meant for the canvas
+  overflow: hidden; // Prevent potential scrollbars within the stars container itself
+}
+
+.star {
+  position: absolute; // Position relative to the :host element (which covers the canvas)
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.7); /* Subtle glow */
+  /* Animation properties are set via inline styles */
+  animation-name: twinkle, drift;
+  animation-iteration-count: infinite, infinite;
+  animation-direction: alternate, alternate;
+  animation-timing-function: ease-in-out, ease-in-out;
+}
+
+@keyframes twinkle {
+  from {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes drift {
+  0% {
+    transform: translate(0px, 0px);
+  }
+  25% {
+    transform: translate(4.5px, -3.5px);
+  }
+  50% {
+    transform: translate(-4px, 4.5px);
+  }
+  75% {
+    transform: translate(4.5px, -3px);
+  }
+  100% {
+    transform: translate(0px, 0px);
+  }
+}
+
+

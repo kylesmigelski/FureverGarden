@@ -1,0 +1,15 @@
+<!-- src/app/stars/stars.component.html -->
+<!-- This component's template ONLY contains the star rendering loop -->
+<div
+  *ngFor="let star of stars; trackBy: trackStarById"
+  class="star"
+  [style.left.%]="star.x"
+  [style.top.px]="star.y"
+  [style.width.px]="star.size"
+  [style.height.px]="star.size"
+  [style.opacity]="star.opacity"
+  [style.animation-duration]="star.animationDuration + 's, ' + star.driftDuration + 's'"
+  [style.animation-delay]="star.animationDelay + 's, ' + star.driftDelay + 's'"
+>
+  <!-- Star element is just a styled div -->
+</div>

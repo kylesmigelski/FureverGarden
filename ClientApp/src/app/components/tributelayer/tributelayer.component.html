@@ -1,0 +1,11 @@
+<!-- Render Existing tribute points -->
+<div
+  *ngFor="let point of tributePoints; trackBy: trackTributeById"
+  class="tribute-point"
+  [style.left.px]="point.x"
+  [style.top.px]="point.y"
+  [title]="point.name + ' (' + point.zone + ')'"
+  (click)="onPointClick(point, $event)"
+>
+  {{ point.icon }}
+</div>
