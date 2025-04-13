@@ -55,5 +55,5 @@ $cloud-blur: 6px;
 // --- Animation (Moved from CanvasComponent) ---
 @keyframes moveCloud {
   0% { transform: translateX(0); }
-  100% { transform: translateX(calc(100vw + 150%)); } // Ensure it moves across the *viewport* width
+  100% { transform: translateX(2000px); }
 }
