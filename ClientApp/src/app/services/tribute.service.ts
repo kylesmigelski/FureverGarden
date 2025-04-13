@@ -1,8 +1,9 @@
 // src/app/services/tribute.service.ts
 import { Injectable, inject } from '@angular/core'; // Import inject
 import { HttpClient, HttpParams } from '@angular/common/http'; // Import HttpClient, HttpParams
-import { Observable, throwError } from 'rxjs'; // Import Observable, throwError
-import { catchError, map, tap } from 'rxjs/operators'; // Import operators
+import {BehaviorSubject, Observable, throwError} from 'rxjs'; // Import Observable, throwError
+import { catchError, map, tap } from 'rxjs/operators';
+import {environment} from "../../environments/environment.prod"; // Import operators
 
 // Keep interfaces here or move to a shared models file
 export type TributeZone = 'space' | 'sky' | 'surface' | 'roots' | 'deep';
@@ -39,40 +40,45 @@ export interface PresignedUrlResponse {
 })
 export class TributeService {
   private http = inject(HttpClient); // Inject HttpClient
+  private apiUrl = environment.apiUrl;
 
-  // Replace with YOUR actual API Gateway Invoke URL
-  private apiUrl = 'https://a0h9i0k1y7.execute-api.us-east-2.amazonaws.com';
-
-  // --- Zone Config (needed for icon/zone derivation if NOT done in backend) ---
-  // It's better if the backend calculates zone/icon based on Y,
-  // but keep logic here if backend doesn't do it. We'll assume backend DOES it now.
-  // private readonly spaceLimit = 4000;
-  // private readonly skyLimit = 6000;
-  // ... etc ...
+  private tributeSubject = new BehaviorSubject(<TributePoint[]>[]);
+  public tributes$: Observable<TributePoint[]> = this.tributeSubject.asObservable();
 
   constructor() {
-    // No longer need to generate initial tributes here
+    this.fetchAndNotifyTributes().subscribe();
   }
 
   // --- Service Methods ---
 
   // GET /tributes
-  getTributes(): Observable<TributePoint[]> {
-    console.log('TributeService: Fetching tributes from API');
+  fetchAndNotifyTributes(): Observable<void> {
+    console.log('TributeService: Fetching tributes from API...');
     return this.http.get<TributePoint[]>(`${this.apiUrl}/tributes`).pipe(
-      tap(tributes => console.log(`TributeService: Received ${tributes.length} tributes`)),
-      catchError(this.handleError) // Basic error handling
+      tap(tributes => {
+        console.log(`TributeService: Received ${tributes.length} tributes, updating subject.`);
+        this.tributeSubject.next(tributes); // Update the BehaviorSubject
+      }),
+      map(() => void 0), // Transform the tribute array result into void for the return type
+      catchError(err => {
+        console.error('TributeService: Failed to fetch tributes:', err);
+        return throwError(() => new Error('Failed to fetch tributes')); // Propagate error
+      })
     );
   }
 
   // POST /tributes
   addTribute(payload: NewTributePayload): Observable<TributePoint> {
     console.log('TributeService: Adding tribute via API:', payload);
-    // Backend now expects x, y, name, description?, photoS3Key?
-    // Backend will calculate id, zone, icon, createdAt
     return this.http.post<TributePoint>(`${this.apiUrl}/tributes`, payload).pipe(
-      tap(newTribute => console.log('TributeService: Successfully added tribute:', newTribute)),
-      catchError(this.handleError)
+      tap((addedTribute) => {
+        console.log('TributeService: Add successful, triggering refresh...', addedTribute);
+        this.fetchAndNotifyTributes().subscribe({
+          error: err => console.error("Error during refresh after add:", err) // Log refresh errors separately
+        });
+        // ---------------------------------------------
+      }),
+      catchError(this.handleError) // Handle errors from the POST itself
     );
   }
 

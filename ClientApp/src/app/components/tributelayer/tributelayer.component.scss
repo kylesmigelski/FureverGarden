@@ -6,7 +6,7 @@
   cursor: pointer;
   animation: twinkle 3s infinite ease-in-out;
   user-select: none;
-// z-index set globally in canvas.scss or via Input if needed
+  z-index: 150;
 
 &:hover {
   transform: scale(1.3);

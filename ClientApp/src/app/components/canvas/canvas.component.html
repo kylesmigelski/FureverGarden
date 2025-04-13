@@ -6,13 +6,11 @@
     (click)="openNewTributeModal($event)"
     >
 
-    <!-- ===== CLOUDS COMPONENT  ===== -->
     <app-clouds
         class="clouds-layer"
         [spaceLimit]="spaceLimit"
         [skyLimit]="skyLimit">
     </app-clouds>
-    <!-- ===== END CLOUDS COMPONENT ===== -->
 
     <!-- Render Hills -->
     <app-hills></app-hills>
@@ -34,6 +32,7 @@
     </app-tributelayer>
 
     <app-newtribute
+      #newTributeModalElement
       [isVisible]="isNewTributeModalVisible"
       [pendingTribute]="pendingTribute"
       (confirm)="handleNewTributeConfirm($event)"
@@ -41,6 +40,7 @@
     </app-newtribute>
 
     <app-viewtribute
+      #viewTributeModalElement
       [isVisible]="isDetailsModalVisible"
       [selectedTribute]="selectedTributeForModal"
       [modalX]="detailsModalX"

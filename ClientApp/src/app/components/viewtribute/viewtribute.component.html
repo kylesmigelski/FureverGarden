@@ -1,30 +1,61 @@
 <div
   *ngIf="isVisible && selectedTribute"
-  class="floating-modal details-modal"
-  [style.left.px]="modalX"
-  [style.top.px]="modalY"
   (click)="stopPropagation($event)"
+  [ngStyle]="{
+    left: isDesktop ? modalX + 'px' : '',
+    top: isDesktop ? modalY + 'px' : ''
+  }"
+  class="fixed z-[1000] w-[90vw] sm:w-[400px] max-w-full max-h-[90vh] p-6 bg-white text-gray-800 rounded-xl shadow-lg border border-gray-200 transition-opacity duration-150 ease-out
+         sm:left-auto sm:top-auto sm:transform-none
+         left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
+  [class.opacity-100]="isVisible"
+  [class.opacity-0]="!isVisible"
 >
-  <h4>Tribute Details</h4>
-  <div class="details-content">
-    <div><strong>Icon:</strong> {{ selectedTribute.icon }}</div>
-    <div><strong>Name:</strong> {{ selectedTribute.name }}</div>
-    <div><strong>Description:</strong> {{ selectedTribute.description || 'N/A' }}</div>
-    <div><strong>Zone:</strong> {{ selectedTribute.zone }}</div>
-    <div><strong>Coords:</strong> ({{ selectedTribute.x | number:'1.0-0' }}
-      , {{ selectedTribute.y | number:'1.0-0' }})
+<!-- Header -->
+  <h4 class="text-lg font-semibold text-gray-900 pb-3 mb-4 border-b border-gray-200">
+    Tribute Details
+  </h4>
+
+  <!-- Scrollable Content -->
+  <div class="overflow-y-auto text-sm text-gray-700 space-y-4 pr-2 max-h-[calc(90vh-150px)] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 scrollbar-thumb-rounded-full">
+    <div>
+      <label class="block font-medium text-gray-900 mb-1">Name:</label>
+      <p>{{ selectedTribute.name }}</p>
     </div>
-    <div><strong>ID:</strong> {{ selectedTribute.id }}</div>
-    <div *ngIf="photoUrl" class="tribute-photo-section">
-      <strong>Photo:</strong><br>
+
+    <div>
+      <label class="block font-medium text-gray-900 mb-1">Description:</label>
+      <div
+        class="w-full max-h-40 overflow-y-auto whitespace-pre-wrap break-words rounded-md border border-gray-200 bg-gray-50 p-2 text-sm leading-snug text-gray-700"
+      >
+        {{ selectedTribute.description || 'N/A' }}
+      </div>
+    </div>
+
+
+
+    <!-- Photo Section -->
+    <div *ngIf="photoUrl">
+      <label class="block font-medium text-gray-900 mb-1.5">Photo:</label>
       <img
         [src]="photoUrl"
         [alt]="'Photo for tribute ' + selectedTribute.name"
+        (click)="openPhotoViewer(photoUrl, selectedTribute.name)"
         (error)="onImageError($event)"
-      >
+        class="cursor-zoom-in w-full max-h-[200px] object-cover rounded-md border"
+      />
+      <span *ngIf="imageLoadError" class="text-xs text-red-600 block mt-1">Could not load image.</span>
     </div>
   </div>
-  <div class="modal-actions">
-    <button (click)="onCloseClick()" class="btn-close">Close</button>
+
+  <!-- Footer / Actions -->
+  <div class="flex justify-end gap-3 mt-6 border-t border-gray-200 pt-4">
+    <button
+      type="button"
+      (click)="onCloseClick($event)"
+      class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+    >
+      Close
+    </button>
   </div>
 </div>

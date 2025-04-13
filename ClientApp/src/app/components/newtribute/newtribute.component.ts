@@ -76,7 +76,8 @@ export class NewTributeComponent implements OnChanges { // Make sure class name 
     }
   }
 
-  onConfirmClick(): void { // No longer needs async/await if using RxJS subscribe fully
+  onConfirmClick(event?: MouseEvent | KeyboardEvent): void {
+    event?.stopPropagation();
     if (!this.pendingTribute || this.isUploading) return;
 
     this.isUploading = true;
@@ -121,7 +122,8 @@ export class NewTributeComponent implements OnChanges { // Make sure class name 
     }
   }
 
-  onCancelClick(): void {
+  onCancelClick(event?: MouseEvent | KeyboardEvent): void {
+    event?.stopPropagation();
     this.cancel.emit();
   }
 

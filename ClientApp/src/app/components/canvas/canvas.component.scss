@@ -1,19 +1,8 @@
-﻿// --- Z-Index Variables ---
-// Define these *before* they are used
-$cloud-layer-z: 800;
-$hill-base-z: 5; // Hills start above clouds
-// Note: $max-hill-z-index is calculated in TS now, ensure this base is lower
-$star-z: 150;    // Stars clearly above hills
-$point-z: 160;   // Points clearly above stars
-$modal-z: 1000;  // Modals way above everything
-
-// Style the app-clouds host element directly
-app-clouds.clouds-layer {
+﻿app-clouds.clouds-layer {
   position: absolute;
   top: var(--space-end-perc);
   left: 0;
   width: 100%;
-  z-index: $cloud-layer-z; // Use variable
   overflow: hidden;
   pointer-events: none;
 }
@@ -21,11 +10,13 @@ app-clouds.clouds-layer {
 .canvas-container {
   height: 100vh;
   overflow-y: scroll;
-  position: relative; // Needed for absolute positioning of children if modal wasn't fixed
+  overflow-x: auto;
+  position: relative;
 }
 
 .tribute-canvas {
   position: relative;
+  min-width: 1200px;
   width: 100%;
   overflow: hidden;
   cursor: crosshair;

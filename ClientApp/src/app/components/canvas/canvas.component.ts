@@ -1,11 +1,20 @@
-﻿import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef, OnDestroy, HostListener } from '@angular/core';
-import { Observable, Subscription } from 'rxjs'; // Import Observable/Subscription
+﻿import {
+  Component,
+  OnInit,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  ChangeDetectorRef,
+  OnDestroy,
+  HostListener
+} from '@angular/core';
+import {Observable, Subscription} from 'rxjs'; // Import Observable/Subscription
 import {
   TributeService,
   TributePoint,
   NewTributePayload
 } from '../../services/tribute.service';
-import { PendingTribute } from '../newtribute/newtribute.component';
+import {PendingTribute} from '../newtribute/newtribute.component';
 
 
 @Component({
@@ -14,10 +23,13 @@ import { PendingTribute } from '../newtribute/newtribute.component';
   styleUrls: ['./canvas.component.scss'],
 })
 export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('newTributeModalElement') newTributeModalElementRef?: ElementRef<HTMLElement>;
+  @ViewChild('viewTributeModalElement') viewTributeModalElementRef?: ElementRef<HTMLElement>;
+  private justOpenedModal = false;
   // --- Visual & Zone Config---
   readonly VISUAL_HEIGHT = 12000;
   readonly spaceLimit = 4000;
-  readonly skyLimit = 6000;
+  readonly skyLimit = 5900;
   readonly surfaceLimit = 7500;
   readonly rootsLimit = 9000;
   readonly spaceEndPerc: string;
@@ -27,7 +39,7 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // --- Child Component Inputs ---
   readonly starZoneLimit = this.skyLimit;
-  readonly starRenderCount = 750; // Or from config
+  readonly starRenderCount = 550; // Or from config
   readonly starTaperHeight = 4000;
   readonly starTaperExponent = 2;
 
@@ -49,6 +61,14 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   private animationFrameId: number | null = null;
   private isAutoScrolling = false;
 
+  private readonly detailsModalWidthEstimate = 300; // min-width + padding
+  private readonly detailsModalHeightEstimate = 600; // Estimate based on content lines
+  private readonly newModalWidthEstimate = 300;
+  private readonly newModalHeightEstimate = 455; // Estimate based on form elements
+  private readonly viewportMargin = 0;  // Minimum space from viewport edges
+  private readonly cursorMargin = 0;   // Space away from cursor, especially when flipped
+
+
   constructor(
     private cdRef: ChangeDetectorRef,
     private elRef: ElementRef,
@@ -60,10 +80,10 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
     this.skyEndPerc = `${(this.skyLimit / totalH) * 100}%`;
     this.surfaceEndPerc = `${(this.surfaceLimit / totalH) * 100}%`;
     this.rootsEndPerc = `${(this.rootsLimit / totalH) * 100}%`;
+    this.tributes$ = this.tributeService.tributes$; // Subscribe to tributes
   }
 
   ngOnInit(): void {
-    this.tributes$ = this.tributeService.getTributes(); // Fetch tributes from service
   }
 
   ngAfterViewInit(): void {
@@ -77,7 +97,7 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
       console.log('ngAfterViewInit - .canvas-container not scrollable, assuming WINDOW scroll.');
     }
     requestAnimationFrame(() => {
-      this.animateScrollToSurface(3000);
+      this.animateScrollToSurface(2000);
     });
   }
 
@@ -85,17 +105,95 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
   }
 
+  // --- Host Listener for Document Clicks ---
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.justOpenedModal) {
+      console.log('Ignoring click because modal just opened');
+      return;
+    }
+
+    const canvasElement = this.elRef.nativeElement.querySelector('.tribute-canvas');
+    const clickedElement = event.target as Node;
+    console.log('Clicked element:', clickedElement);
+
+    // if we clicked the canvas, close the modal
+    if (canvasElement && canvasElement.contains(clickedElement)) {
+      this.closeNewTributeModal();
+      this.closeDetailsModal();
+    }
+
+  }
+
+  private calculateSafeModalPosition(
+    clickX: number,
+    clickY: number,
+    modalWidth: number,
+    modalHeight: number
+  ): { x: number, y: number } {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const vpMargin = this.viewportMargin;
+    const crMargin = this.cursorMargin; // Cursor offset
+
+    let finalX: number;
+    let finalY: number;
+
+    // --- Determine Horizontal Position (X) ---
+    const wouldOverflowRight = (clickX + crMargin + modalWidth) > (viewportWidth - vpMargin);
+
+    if (wouldOverflowRight) {
+      // Flip to the left of the cursor
+      finalX = clickX - modalWidth - crMargin;
+      // Clamp to left edge if flipping *still* overflows left
+      if (finalX < vpMargin) {
+        finalX = vpMargin;
+      }
+    } else {
+      // Place to the right of the cursor (default)
+      finalX = clickX + crMargin;
+      // Clamp to left edge if default overflows left (unlikely but possible)
+      if (finalX < vpMargin) {
+        finalX = vpMargin;
+      }
+    }
+
+    const wouldOverflowBottom = (clickY + crMargin + modalHeight) > (viewportHeight - vpMargin);
+
+    if (wouldOverflowBottom) {
+      // Flip above the cursor
+      finalY = clickY - modalHeight - crMargin;
+      // Clamp to top edge if flipping *still* overflows top
+      if (finalY < vpMargin) {
+        finalY = vpMargin;
+      }
+    } else {
+      // Place below the cursor (default)
+      finalY = clickY + crMargin;
+      // Clamp to top edge if default overflows top
+      if (finalY < vpMargin) {
+        finalY = vpMargin;
+      }
+    }
+
+    return {x: finalX, y: finalY};
+  }
+
   // --- Event Handlers ---
 
   // Main Canvas Click Handler
   openNewTributeModal(event: MouseEvent): void {
-    if (this.animationFrameId) { /* ... cancel scroll ... */ }
+    if (this.animationFrameId) { /* ... cancel scroll ... */
+    }
     const targetElement = event.target as HTMLElement;
     if (targetElement.closest('.tribute-point') || targetElement.closest('.floating-modal')) return;
     if (this.isNewTributeModalVisible || this.isDetailsModalVisible) return;
 
     const canvasElement = this.elRef.nativeElement.querySelector('.tribute-canvas');
-    if (!canvasElement) { console.error("Canvas element not found!"); return; }
+    if (!canvasElement) {
+      console.error("Canvas element not found!");
+      return;
+    }
     const boundingRect = canvasElement.getBoundingClientRect();
 
     const clickX = event.clientX - boundingRect.left;
@@ -104,19 +202,28 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
     const zone = this.tributeService.getZoneByY(clickY_absolute);
     const icon = this.tributeService.getDefaultIconByZone(zone);
 
-    console.log('Click Debug:', { calculatedY: clickY_absolute });
+    this.justOpenedModal = true;
+
+    // Calculate safe position for the modal itself using viewport coords
+    const safePos = this.calculateSafeModalPosition(
+      event.clientX, // Use viewport click coords for modal positioning
+      event.clientY,
+      this.newModalWidthEstimate,
+      this.newModalHeightEstimate
+    );
 
     this.pendingTribute = {
       x: clickX,
       y: clickY_absolute, // Use absolute Y
-      modalX: event.clientX,
-      modalY: event.clientY,
+      modalX: safePos.x,
+      modalY: safePos.y,
       icon: icon, // Use calculated icon
       zone: zone  // Use calculated zone
     };
     this.isNewTributeModalVisible = true;
     this.isDetailsModalVisible = false;
     this.cdRef.detectChanges();
+    setTimeout(() => { this.justOpenedModal = false; }, 0);
   }
 
   // Handler for New Tribute Modal Confirmation
@@ -131,15 +238,14 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
       photoS3Key: formData.photoS3Key
     };
     console.log('Canvas: Calling tributeService.addTribute with:', newTributePayload);
+
     this.tributeService.addTribute(newTributePayload)
       .subscribe({ // Subscribe to ensure the call is made and handle results
         next: (addedTribute) => {
           console.log('Canvas: Tribute added successfully via service:', addedTribute);
-          // Optional: Show success message
         },
         error: (err) => {
           console.error('Canvas: Failed to add tribute:', err);
-          // this.closeNewTributeModal(); // Maybe don't close on error?
         },
         complete: () => {
           // Runs after next/error. Safe place to close modal regardless of success/fail?
@@ -158,17 +264,30 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   private closeNewTributeModal(): void {
     this.isNewTributeModalVisible = false;
     this.pendingTribute = null;
+    this.cdRef.detectChanges();
   }
 
   // Handler for clicking an existing tribute point (from TributeLayerComponent)
   handleTributeClick(payload: { tribute: TributePoint, event: MouseEvent }): void {
     if (this.isNewTributeModalVisible) this.closeNewTributeModal();
+
+    this.justOpenedModal = true;
+
+    // Calculate safe position for the details modal
+    const safePos = this.calculateSafeModalPosition(
+      payload.event.clientX, // Use viewport click coords
+      payload.event.clientY,
+      this.detailsModalWidthEstimate,
+      this.detailsModalHeightEstimate
+    );
+
     this.selectedTributeForModal = payload.tribute;
-    this.detailsModalX = payload.event.clientX;
-    this.detailsModalY = payload.event.clientY;
+    this.detailsModalX = safePos.x;
+    this.detailsModalY = safePos.y;
     console.log(`Canvas: Setting details modal coords: X=${this.detailsModalX}, Y=${this.detailsModalY}`);
     this.isDetailsModalVisible = true;
     this.cdRef.detectChanges();
+    setTimeout(() => { this.justOpenedModal = false; }, 0);
   }
 
   // Handler for closing the Details Modal
@@ -179,6 +298,7 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   private closeDetailsModal(): void {
     this.isDetailsModalVisible = false;
     this.selectedTributeForModal = null;
+    this.cdRef.detectChanges();
   }
 
   customSmoothScrollTo(targetY: number, duration: number): void {
@@ -239,7 +359,7 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Helper to set scroll top for window or element */
   private setScrollTop(value: number): void {
     if (this.scrollContainer instanceof Window) {
-      window.scrollTo({ top: value, behavior: 'auto' }); // Use instant within the animation loop
+      window.scrollTo({top: value, behavior: 'auto'}); // Use instant within the animation loop
     } else if (this.scrollContainer instanceof HTMLElement) {
       this.scrollContainer.scrollTop = value;
     }
@@ -251,7 +371,7 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.scrollContainer) return;
 
     const surfaceZoneStartY = this.skyLimit; // Surface starts where sky ends
-    const targetScrollTop = surfaceZoneStartY -450;
+    const targetScrollTop = surfaceZoneStartY - 450;
 
     let currentScrollHeight = 0;
     let currentClientHeight = 0;
